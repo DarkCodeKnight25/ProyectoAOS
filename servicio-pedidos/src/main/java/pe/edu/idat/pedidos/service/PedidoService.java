@@ -11,10 +11,10 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    // 🔥 LÓGICA DE NEGOCIO REAL
+    // 🔥 REGISTRAR PEDIDO (LÓGICA DE NEGOCIO)
     public Pedido registrarPedido(Pedido pedido) {
 
-        // Regla 1: cantidad no puede ser 0 o negativa
+        // Regla 1: cantidad válida
         if (pedido.getCantidad() <= 0) {
             throw new RuntimeException("La cantidad debe ser mayor a 0");
         }
@@ -24,9 +24,33 @@ public class PedidoService {
             throw new RuntimeException("El cliente es obligatorio");
         }
 
-        // Regla 3: estado inicial automático
+        // Regla 3: estado inicial
         pedido.setEstado("PENDIENTE");
 
+        return pedidoRepository.save(pedido);
+    }
+
+    // 🔥 APROBAR PEDIDO
+    public Pedido aprobarPedido(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        if (!pedido.getEstado().equals("PENDIENTE")) {
+            throw new RuntimeException("Solo pedidos pendientes pueden aprobarse");
+        }
+
+        pedido.setEstado("APROBADO");
+        return pedidoRepository.save(pedido);
+    }
+
+    // 🔥 RECHAZAR PEDIDO
+    public Pedido rechazarPedido(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        pedido.setEstado("RECHAZADO");
         return pedidoRepository.save(pedido);
     }
 }
