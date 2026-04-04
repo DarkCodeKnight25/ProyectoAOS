@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.idat.pedidos.model.Pedido;
 import pe.edu.idat.pedidos.service.PedidoService;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos") // 🔥 CORREGIDO
 public class PedidoController {
 
     @Autowired
@@ -17,6 +19,12 @@ public class PedidoController {
     @PostMapping
     public Pedido crearPedido(@RequestBody Pedido pedido) {
         return pedidoService.registrarPedido(pedido);
+    }
+
+    // 🔹 Listar pedidos
+    @GetMapping
+    public List<Pedido> listar() {
+        return pedidoService.listarPedidos();
     }
 
     // 🔹 Aprobar pedido
