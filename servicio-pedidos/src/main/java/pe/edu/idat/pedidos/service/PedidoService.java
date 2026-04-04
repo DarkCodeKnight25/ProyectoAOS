@@ -29,18 +29,17 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
-    // 🔥 LISTAR PEDIDOS (NUEVO)
+    // 🔥 LISTAR PEDIDOS
     public List<Pedido> listarPedidos() {
         return pedidoRepository.findAll();
     }
 
     // 🔥 APROBAR PEDIDO
     public Pedido aprobarPedido(Long id) {
-
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        if (!pedido.getEstado().equals("PENDIENTE")) {
+        if (!pedido.getEstado().equalsIgnoreCase("PENDIENTE")) {
             throw new RuntimeException("Solo pedidos pendientes pueden aprobarse");
         }
 
@@ -50,9 +49,12 @@ public class PedidoService {
 
     // 🔥 RECHAZAR PEDIDO
     public Pedido rechazarPedido(Long id) {
-
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        if (!pedido.getEstado().equalsIgnoreCase("PENDIENTE")) {
+            throw new RuntimeException("Solo pedidos pendientes pueden rechazarse");
+        }
 
         pedido.setEstado("RECHAZADO");
         return pedidoRepository.save(pedido);

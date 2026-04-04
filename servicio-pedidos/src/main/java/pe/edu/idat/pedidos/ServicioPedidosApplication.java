@@ -3,10 +3,7 @@ package pe.edu.idat.pedidos;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.Scanner;
-
-// 🔥 IMPORTS
+import org.springframework.jms.annotation.EnableJms;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpEntity;
@@ -15,12 +12,22 @@ import org.springframework.http.MediaType;
 
 import pe.edu.idat.pedidos.model.Pedido;
 import pe.edu.idat.pedidos.model.Producto;
+import pe.edu.idat.pedidos.service.PedidoProducer;
+
+import java.util.Scanner;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 @SpringBootApplication
+@EnableJms // 🔥 Habilitar JMS
 public class ServicioPedidosApplication implements CommandLineRunner {
 
-    // 🔥 SCANNER GLOBAL (SOLUCIÓN)
+    // 🔥 SCANNER GLOBAL
     private static final Scanner sc = new Scanner(System.in);
+
+    // 🔥 INYECCIÓN DEL PRODUCER JMS
+    @Autowired
+    private PedidoProducer pedidoProducer;
 
     public static void main(String[] args) {
         SpringApplication.run(ServicioPedidosApplication.class, args);
@@ -59,7 +66,7 @@ public class ServicioPedidosApplication implements CommandLineRunner {
                         procesarPedido();
                         break;
                     case 4:
-                        enviarPedido();
+                        enviarPedidoJMS();
                         break;
                     case 5:
                         ejecutarESB();
@@ -78,13 +85,12 @@ public class ServicioPedidosApplication implements CommandLineRunner {
         } while (opcion != 0);
     }
 
-    // 🔥 CREAR PEDIDO (CON PRODUCTOS)
+    // 🔥 CREAR PEDIDO
     private void crearPedido() {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-            // 🔹 Obtener productos
             String urlProductos = "http://localhost:8080/productos";
 
             ResponseEntity<Producto[]> response =
@@ -97,13 +103,11 @@ public class ServicioPedidosApplication implements CommandLineRunner {
                 return;
             }
 
-            // 🔹 Mostrar productos
             System.out.println("\n=== PRODUCTOS DISPONIBLES ===");
             for (Producto p : productos) {
                 System.out.println(p.getId() + ". " + p.getNombre() + " - S/" + p.getPrecio());
             }
 
-            // 🔹 Selección
             System.out.print("Seleccione ID del producto: ");
             Long idSeleccionado = Long.parseLong(sc.nextLine());
 
@@ -121,20 +125,17 @@ public class ServicioPedidosApplication implements CommandLineRunner {
                 return;
             }
 
-            // 🔹 Datos pedido
             System.out.print("Ingrese cliente: ");
             String cliente = sc.nextLine();
 
             System.out.print("Ingrese cantidad: ");
             int cantidad = Integer.parseInt(sc.nextLine());
 
-            // 🔹 Crear objeto
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
             pedido.setProducto(productoSeleccionado.getNombre());
             pedido.setCantidad(cantidad);
 
-            // 🔥 IMPORTANTE: usar API correcta
             String urlPedido = "http://localhost:8080/api/pedidos";
 
             HttpHeaders headers = new HttpHeaders();
@@ -158,7 +159,6 @@ public class ServicioPedidosApplication implements CommandLineRunner {
 
     // 🔥 LISTAR PEDIDOS
     private void listarPedidos() {
-
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -192,7 +192,6 @@ public class ServicioPedidosApplication implements CommandLineRunner {
 
     // 🔥 PROCESAR PEDIDO
     private void procesarPedido() {
-
         try {
             System.out.print("Ingrese ID del pedido a procesar: ");
             Long id = Long.parseLong(sc.nextLine());
@@ -210,12 +209,30 @@ public class ServicioPedidosApplication implements CommandLineRunner {
         }
     }
 
-    // 🔥 JMS (AÚN SIMULADO)
-    private void enviarPedido() {
-        System.out.println(">>> Enviar pedido a JMS (pendiente implementar)");
+    // 🔥 JMS REAL
+    private void enviarPedidoJMS() {
+        try {
+            System.out.print("Ingrese ID del pedido a enviar a JMS: ");
+            Long id = Long.parseLong(sc.nextLine());
+
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "http://localhost:8080/api/pedidos/" + id;
+            ResponseEntity<Pedido> response = restTemplate.getForEntity(url, Pedido.class);
+
+            Pedido pedido = response.getBody();
+
+            if (pedido != null) {
+                pedidoProducer.enviarPedido(pedido);
+            } else {
+                System.out.println("❌ Pedido no encontrado");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error al enviar pedido JMS: " + e.getMessage());
+        }
     }
 
-    // 🔥 ESB COMPLETO
+    // 🔥 ESB
     private void ejecutarESB() {
 
         try {
