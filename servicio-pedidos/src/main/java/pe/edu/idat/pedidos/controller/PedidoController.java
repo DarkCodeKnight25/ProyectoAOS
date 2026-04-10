@@ -9,7 +9,7 @@ import pe.edu.idat.pedidos.service.PedidoService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pedidos") // 🔥 CORREGIDO
+@RequestMapping("/api/pedidos")
 public class PedidoController {
 
     @Autowired
@@ -25,6 +25,12 @@ public class PedidoController {
     @GetMapping
     public List<Pedido> listar() {
         return pedidoService.listarPedidos();
+    }
+
+    // 🔹 Obtener pedido por ID (nuevo endpoint)
+    @GetMapping("/{id}")
+    public Pedido obtenerPorId(@PathVariable Long id) {
+        return pedidoService.obtenerPorId(id);
     }
 
     // 🔹 Aprobar pedido

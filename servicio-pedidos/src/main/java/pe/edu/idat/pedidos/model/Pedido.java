@@ -1,9 +1,12 @@
 package pe.edu.idat.pedidos.model;
 
 import jakarta.persistence.*;
+import java.io.Serializable; // 🔹 IMPORTANTE
 
 @Entity
-public class Pedido {
+public class Pedido implements Serializable { // 🔹 Agregado Serializable
+
+    private static final long serialVersionUID = 1L; // 🔹 Opcional pero recomendable
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

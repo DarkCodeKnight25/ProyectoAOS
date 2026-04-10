@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import pe.edu.idat.pedidos.model.Pedido;
 import pe.edu.idat.pedidos.repository.PedidoRepository;
 
-import java.util.List; // 🔥 IMPORTANTE
+import java.util.List;
 
 @Service
 public class PedidoService {
@@ -13,9 +13,8 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    // 🔥 REGISTRAR PEDIDO
+    // 🔹 Registrar pedido
     public Pedido registrarPedido(Pedido pedido) {
-
         if (pedido.getCantidad() <= 0) {
             throw new RuntimeException("La cantidad debe ser mayor a 0");
         }
@@ -25,21 +24,26 @@ public class PedidoService {
         }
 
         pedido.setEstado("PENDIENTE");
-
         return pedidoRepository.save(pedido);
     }
 
-    // 🔥 LISTAR PEDIDOS
+    // 🔹 Listar pedidos
     public List<Pedido> listarPedidos() {
         return pedidoRepository.findAll();
     }
 
-    // 🔥 APROBAR PEDIDO
+    // 🔹 Obtener pedido por ID (nuevo)
+    public Pedido obtenerPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+    }
+
+    // 🔹 Aprobar pedido
     public Pedido aprobarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        if (!pedido.getEstado().equalsIgnoreCase("PENDIENTE")) {
+        if (!pedido.getEstado().equals("PENDIENTE")) {
             throw new RuntimeException("Solo pedidos pendientes pueden aprobarse");
         }
 
@@ -47,14 +51,10 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
-    // 🔥 RECHAZAR PEDIDO
+    // 🔹 Rechazar pedido
     public Pedido rechazarPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
-
-        if (!pedido.getEstado().equalsIgnoreCase("PENDIENTE")) {
-            throw new RuntimeException("Solo pedidos pendientes pueden rechazarse");
-        }
 
         pedido.setEstado("RECHAZADO");
         return pedidoRepository.save(pedido);

@@ -3,7 +3,6 @@ package pe.edu.idat.pedidos.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
-
 import pe.edu.idat.pedidos.model.Pedido;
 
 @Service
@@ -12,7 +11,8 @@ public class PedidoProducer {
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    private static final String COLA = "cola.pedidos";
+    // 🔹 Nombre de la cola (coincide con el listener)
+    private static final String COLA = "pedidos-queue";
 
     public void enviarPedido(Pedido pedido) {
         jmsTemplate.convertAndSend(COLA, pedido);
