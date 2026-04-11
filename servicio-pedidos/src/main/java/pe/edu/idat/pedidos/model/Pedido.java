@@ -19,6 +19,7 @@ public class Pedido implements Serializable { // 🔹 Agregado Serializable
 
     public Pedido() {}
 
+    // Getters y setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
